@@ -74,7 +74,9 @@ type CurrentSubscription struct {
 }
 
 type PriceInfo struct {
-	CurrentPriceInfo CurrentPriceInfo `json:"current"`
+	CurrentPriceInfo  CurrentPriceInfo   `json:"current"`
+	TodayPriceInfo    []CurrentPriceInfo `json:"today"`
+	TomorrowPriceInfo []CurrentPriceInfo `json:"tomorrow"`
 }
 
 type CurrentPriceInfo struct {
@@ -239,4 +241,50 @@ func (t *Client) GetCurrentPrice(homeId string) (CurrentPriceInfo, error) {
 	}
 
 	return result.Viewer.Home.CurrentSubscription.PriceInfo.CurrentPriceInfo, nil
+}
+
+func (t *Client) GetFullPriceInfo(homeId string) (PriceInfo, error) {
+	req := graphql.NewRequest(fmt.Sprintf(`
+		query {
+			viewer {
+				home(id:"%s")  {
+					currentSubscription {
+						priceInfo {
+							current {
+								level
+								total
+								energy
+								tax
+								currency
+								startsAt
+							}
+							 today {
+								total
+								energy
+								tax
+								startsAt
+								level
+							  }
+							  tomorrow {
+								total
+								energy
+								tax
+								startsAt
+								level
+							 }
+						}
+					}
+				}
+			}
+		}`, homeId))
+	req.Header.Set("Cache-Control", "no-cache")
+	req.Header.Set("Authorization", "Bearer "+t.Token)
+	ctx := context.Background()
+	var result HomeResponse
+	if err := t.gqlClient.Run(ctx, req, &result); err != nil {
+		log.Error(err)
+		return PriceInfo{}, err
+	}
+
+	return result.Viewer.Home.CurrentSubscription.PriceInfo, nil
 }
