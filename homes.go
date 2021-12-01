@@ -262,6 +262,7 @@ func (t *Client) GetFullPriceInfo(homeId string) (PriceInfo, error) {
 								total
 								energy
 								tax
+								currency
 								startsAt
 								level
 							  }
@@ -270,6 +271,7 @@ func (t *Client) GetFullPriceInfo(homeId string) (PriceInfo, error) {
 								energy
 								tax
 								startsAt
+								currency
 								level
 							 }
 						}
