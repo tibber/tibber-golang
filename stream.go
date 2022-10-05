@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"runtime/debug"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -282,6 +283,12 @@ func (ts *Stream) connect() error {
 	for {
 		reqHeader := make(http.Header)
 		reqHeader.Add("Sec-WebSocket-Protocol", "graphql-subscriptions")
+		bi, ok := debug.ReadBuildInfo()
+		if !ok {
+			log.Printf("Failed to read build info")
+			return nil
+		}
+		reqHeader.Add("User-agent", "FutureHome/x.x.x tibber-golang/"+bi.Main.Version) // TODO resolve future home platform version
 		ts.client, _, err = websocket.DefaultDialer.Dial(u.String(), reqHeader)
 
 		if err != nil {
